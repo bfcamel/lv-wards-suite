@@ -1,0 +1,202 @@
+name: Release 1.0.2 fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/release-1.0.2-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply 1.0.2 changes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          home_path = Path('includes/wards-home.php')
+          home = home_path.read_text()
+
+          if '        --beige: #f4efee;\n' not in home:
+              raise SystemExit('Expected homepage beige variable not found')
+          home = home.replace('        --beige: #f4efee;\n', '', 1)
+
+          home_bg = """        background:\n            var(--beige);\n\n"""
+          if home_bg not in home:
+              raise SystemExit('Expected homepage wrapper background not found')
+          home = home.replace(home_bg, '', 1)
+
+          section_open = """        <section\n            class=\"cw-sec\"\n            aria-label=\"Наши подопечные\"\n        >\n\n"""
+          heading = section_open + """            <h2 class=\"cw-title\">\n                Наши подопечные\n            </h2>\n\n"""
+          if section_open not in home:
+              raise SystemExit('Expected homepage section markup not found')
+          home = home.replace(section_open, heading, 1)
+
+          carousel_marker = """    /* ==========================================================\n       CAROUSEL\n       ========================================================== */\n"""
+          title_css = """    #cfWards .cw-title {\n        margin:\n            0 0\n            clamp(28px, 3.2vw, 40px);\n\n        color:\n            var(--teal);\n\n        font-size:\n            clamp(30px, 3.6vw, 46px);\n\n        font-weight:\n            400;\n\n        line-height:\n            1.15;\n\n        text-align:\n            center;\n    }\n\n\n"""
+          if carousel_marker not in home:
+              raise SystemExit('Expected carousel marker not found')
+          home = home.replace(carousel_marker, title_css + carousel_marker, 1)
+          home_path.write_text(home)
+
+          page_path = Path('includes/wards-page.php')
+          page = page_path.read_text()
+
+          page = page.replace(
+              '* - единый фон страницы от шапки до подвала;',
+              '* - фон страницы управляется темой или Elementor;',
+              1,
+          )
+          page = page.replace(
+              """/**\n * Класс нужен, чтобы фон страницы продолжался от шапки до подвала,\n * включая внешние отступы темы и Elementor.\n */""",
+              """/**\n * Класс страницы сохраняется для точечных layout-исправлений,\n * но плагин больше не задаёт через него цвет фона.\n */""",
+              1,
+          )
+
+          start_marker = """    /* ==========================================================\n       БЕСШОВНАЯ СТЫКОВКА С ШАПКОЙ И ПОДВАЛОМ\n       ========================================================== */\n"""
+          end_marker = """    body.lv-wards-page\n    .elementor-widget-shortcode:has(\n"""
+          start = page.find(start_marker)
+          end = page.find(end_marker, start + 1)
+          if start < 0 or end < 0:
+              raise SystemExit('Expected catalogue page background section not found')
+          replacement = """    /* ==========================================================\n       СТЫКОВКА С ШАПКОЙ И ПОДВАЛОМ\n       Фон страницы намеренно не задаётся плагином.\n       ========================================================== */\n\n"""
+          page = page[:start] + replacement + page[end:]
+
+          if '        --cream: #f4efee;\n' not in page:
+              raise SystemExit('Expected catalogue cream variable not found')
+          page = page.replace('        --cream: #f4efee;\n', '', 1)
+
+          root_bg = """        background: var(--cream);\n        color: var(--teal);\n\n        /*\n         * Полноэкранный фон без width:100vw и отрицательных\n         * смещений. Поэтому горизонтальный скролл не появляется,\n         * даже если у браузера видимая полоса прокрутки.\n         */\n        box-shadow:\n            0 0 0 100vmax var(--cream);\n\n        clip-path:\n            inset(0 -100vmax);\n\n"""
+          if root_bg not in page:
+              raise SystemExit('Expected catalogue root background block not found')
+          page = page.replace(root_bg, '        color: var(--teal);\n\n', 1)
+
+          list_bg = """    #lvWards .w-list {\n        width: 100%;\n        background: var(--cream);\n    }"""
+          if list_bg not in page:
+              raise SystemExit('Expected catalogue list background not found')
+          page = page.replace(
+              list_bg,
+              """    #lvWards .w-list {\n        width: 100%;\n    }""",
+              1,
+          )
+          page_path.write_text(page)
+
+          plugin_path = Path('lv-wards-suite.php')
+          plugin = plugin_path.read_text()
+          if 'Version:     1.0.1' not in plugin or "define('LV_WARDS_SUITE_VERSION', '1.0.1');" not in plugin:
+              raise SystemExit('Expected plugin version 1.0.1 not found')
+          plugin = plugin.replace('Version:     1.0.1', 'Version:     1.0.2', 1)
+          plugin = plugin.replace("define('LV_WARDS_SUITE_VERSION', '1.0.1');", "define('LV_WARDS_SUITE_VERSION', '1.0.2');", 1)
+          plugin_path.write_text(plugin)
+
+          readme_path = Path('readme.txt')
+          readme = readme_path.read_text()
+          if 'Stable tag: 1.0.1' not in readme:
+              raise SystemExit('Expected stable tag 1.0.1 not found')
+          readme = readme.replace('Stable tag: 1.0.1', 'Stable tag: 1.0.2', 1)
+          readme = readme.replace(
+              'Все размеры, веса, интервалы, цвета, отступы, адаптив и остальные стили исходных сниппетов сохранены.',
+              'Внутреннее оформление карточек, кнопок, меток, отступов и адаптива сохранено. Фон внешних секций и страницы каталога плагин больше не задаёт — он наследуется от темы или Elementor.',
+              1,
+          )
+          marker = '== Изменения 1.0.1 ==\n'
+          if marker not in readme:
+              raise SystemExit('Expected 1.0.1 changelog marker not found')
+          readme = readme.replace(
+              marker,
+              """== Изменения 1.0.2 ==\n\n- Плагин больше не задаёт цвет фона внешнего блока [lv_wards_home].\n- Каталог [lv_wards_page] больше не окрашивает body, контентные оболочки WordPress/Elementor и собственный внешний контейнер.\n- Фоны самих карточек, кнопок, изображений-заглушек и других внутренних элементов сохранены.\n- На главной над каруселью добавлен заголовок «Наши подопечные».\n\n\n""" + marker,
+              1,
+          )
+          readme_path.write_text(readme)
+
+          md_path = Path('README.md')
+          md = md_path.read_text()
+          if '**Текущая версия: 1.0.1**' not in md:
+              raise SystemExit('Expected README version 1.0.1 not found')
+          md = md.replace('**Текущая версия: 1.0.1**', '**Текущая версия: 1.0.2**', 1)
+          md_marker = '## Версия 1.0.1\n'
+          if md_marker not in md:
+              raise SystemExit('Expected README 1.0.1 marker not found')
+          md = md.replace(
+              md_marker,
+              """## Версия 1.0.2\n\n- внешние фоны карусели на главной и каталога больше не задаются плагином и наследуются от темы/Elementor;\n- внутреннее оформление карточек сохранено;\n- над каруселью на главной добавлен заголовок «Наши подопечные».\n\n""" + md_marker,
+              1,
+          )
+          md_path.write_text(md)
+          PY
+
+      - name: Check PHP syntax and release state
+        run: |
+          php -l lv-wards-suite.php
+          php -l includes/base.php
+          php -l includes/wards-page.php
+          php -l includes/wards-home.php
+          php -l includes/other-stories.php
+          grep -F 'Version:     1.0.2' lv-wards-suite.php
+          grep -F "define('LV_WARDS_SUITE_VERSION', '1.0.2');" lv-wards-suite.php
+          grep -F 'Stable tag: 1.0.2' readme.txt
+          grep -F 'class="cw-title"' includes/wards-home.php
+          grep -F 'Наши подопечные' includes/wards-home.php
+          if grep -F 'var(--beige)' includes/wards-home.php; then
+            echo 'Homepage still uses its outer beige background'
+            exit 1
+          fi
+          if grep -F 'background-color: #f4efee' includes/wards-page.php; then
+            echo 'Catalogue still forces page background color'
+            exit 1
+          fi
+          if grep -F 'var(--cream)' includes/wards-page.php; then
+            echo 'Catalogue still uses its outer cream background'
+            exit 1
+          fi
+
+      - name: Commit plugin update
+        run: |
+          git config user.name "People & Camels"
+          git config user.email "bfcamel@yandex.ru"
+          git add includes/wards-home.php includes/wards-page.php lv-wards-suite.php readme.txt README.md
+          git commit -m "Release LV Wards Suite 1.0.2"
+          git push origin HEAD:main
+          echo "RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Build WordPress plugin ZIP
+        run: |
+          mkdir -p build/lv-wards-suite
+          rsync -a \
+            --exclude='.git*' \
+            --exclude='.github' \
+            --exclude='build' \
+            --exclude='dist' \
+            --exclude='*.zip' \
+            ./ build/lv-wards-suite/
+          cd build
+          zip -rq ../lv-wards-suite-1.0.2.zip lv-wards-suite
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > release-notes.md <<'EOF'
+          ## LV Wards Suite 1.0.2
+
+          - Внешний фон блока `[lv_wards_home]` больше не задаётся плагином.
+          - Каталог `[lv_wards_page]` больше не задаёт фон `body`, WordPress/Elementor-контейнеров и собственного внешнего блока.
+          - Фоны и фирменные цвета внутренних карточек и элементов интерфейса сохранены.
+          - На главной над каруселью добавлен заголовок «Наши подопечные».
+          EOF
+
+          gh release create v1.0.2 \
+            lv-wards-suite-1.0.2.zip \
+            --target "$RELEASE_SHA" \
+            --title "LV Wards Suite 1.0.2" \
+            --notes-file release-notes.md
