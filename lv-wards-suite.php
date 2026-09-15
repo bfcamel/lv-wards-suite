@@ -3,7 +3,7 @@
  * Plugin Name: Люди и Верблюды — Подопечные
  * Plugin URI:  https://bfcamel.ru/
  * Description: База подопечных, каталог, карусель на главной и блок «Другие истории» фонда «Люди и Верблюды». Совместим с прежними шорткодами, API, CPT, taxonomy и meta-полями.
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      БФ «Люди и Верблюды»
  * Text Domain: lv-wards-suite
  * Requires at least: 6.0
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('LV_WARDS_SUITE_VERSION', '1.0.1');
+define('LV_WARDS_SUITE_VERSION', '1.0.2');
 define('LV_WARDS_SUITE_FILE', __FILE__);
 define('LV_WARDS_SUITE_DIR', plugin_dir_path(__FILE__));
 

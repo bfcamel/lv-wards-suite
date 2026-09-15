@@ -1402,6 +1402,10 @@ function lv_wards_home_render() {
             aria-label="Наши подопечные"
         >
 
+            <h2 class="cw-title">
+                Наши подопечные
+            </h2>
+
 
             <div
                 class="cw-carousel-wrapper"
@@ -1856,7 +1860,6 @@ function lv_wards_home_render() {
         --coral: #c13b2e;
         --mint: #8ed4d3;
         --mint-text: #12414c;
-        --beige: #f4efee;
         --border: #e7dddb;
         --muted: #6e6a63;
 
@@ -1876,9 +1879,6 @@ function lv_wards_home_render() {
         margin-right: -50vw;
 
         overflow: hidden;
-
-        background:
-            var(--beige);
 
         color:
             var(--teal);
@@ -1920,6 +1920,28 @@ function lv_wards_home_render() {
             clamp(56px, 6vw, 80px)
             clamp(20px, 4vw, 40px)
             clamp(64px, 7vw, 90px);
+    }
+
+
+    #cfWards .cw-title {
+        margin:
+            0 0
+            clamp(28px, 3.2vw, 40px);
+
+        color:
+            var(--teal);
+
+        font-size:
+            clamp(30px, 3.6vw, 46px);
+
+        font-weight:
+            400;
+
+        line-height:
+            1.15;
+
+        text-align:
+            center;
     }
 
 

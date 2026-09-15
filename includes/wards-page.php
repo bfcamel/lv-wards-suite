@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
  * - изображения через WordPress Media Library;
  * - автоматические srcset/sizes;
  * - центральное кадрирование фотографий через object-fit: cover;
- * - единый фон страницы от шапки до подвала;
+ * - фон страницы управляется темой или Elementor;
  * - чёрно-белые фото ушедших подопечных;
  * - без JavaScript;
  * - без дублирования данных.
@@ -113,8 +113,8 @@ function lv_is_wards_page_request() {
 
 
 /**
- * Класс нужен, чтобы фон страницы продолжался от шапки до подвала,
- * включая внешние отступы темы и Elementor.
+ * Класс страницы сохраняется для точечных layout-исправлений,
+ * но плагин больше не задаёт через него цвет фона.
  */
 function lv_wards_page_body_class($classes) {
 
@@ -689,44 +689,9 @@ function lv_render_wards_page($atts = []) {
     <style>
 
     /* ==========================================================
-       БЕСШОВНАЯ СТЫКОВКА С ШАПКОЙ И ПОДВАЛОМ
+       СТЫКОВКА С ШАПКОЙ И ПОДВАЛОМ
+       Фон страницы намеренно не задаётся плагином.
        ========================================================== */
-
-    /*
-     * Раньше белая полоса сверху скрывалась отрицательным
-     * margin-top у самого блока. Это смещало элемент, но не меняло
-     * фон внешних отступов темы — поэтому полоса появлялась снизу.
-     *
-     * Теперь весь контентный слой страницы окрашен в фон каталога.
-     * Шапка и подвал сохраняют собственные фоны и перекрывают его.
-     */
-    body.lv-wards-page {
-        background-color: #f4efee;
-    }
-
-
-    body.lv-wards-page :where(
-        #content,
-        .site-content,
-        .site-main,
-        [data-elementor-type="wp-page"]
-    ) {
-        background-color: #f4efee !important;
-    }
-
-
-    /*
-     * Окрашиваем только те оболочки Elementor, внутри которых
-     * действительно находится этот shortcode.
-     */
-    body.lv-wards-page :where(
-        .e-con,
-        .elementor-section,
-        .elementor-column
-    ):has(#lvWards) {
-        background-color: #f4efee !important;
-    }
-
 
     body.lv-wards-page
     .elementor-widget-shortcode:has(
@@ -766,7 +731,6 @@ function lv_render_wards_page($atts = []) {
         --coral: #c13b2e;
         --mint: #8ed4d3;
         --mint-text: #12414c;
-        --cream: #f4efee;
         --border: #e7dddb;
         --muted: #6e6a63;
         --ink: #243b40;
@@ -781,19 +745,7 @@ function lv_render_wards_page($atts = []) {
         margin: 0 !important;
         padding: 0;
 
-        background: var(--cream);
         color: var(--teal);
-
-        /*
-         * Полноэкранный фон без width:100vw и отрицательных
-         * смещений. Поэтому горизонтальный скролл не появляется,
-         * даже если у браузера видимая полоса прокрутки.
-         */
-        box-shadow:
-            0 0 0 100vmax var(--cream);
-
-        clip-path:
-            inset(0 -100vmax);
 
         -webkit-font-smoothing: antialiased;
         text-rendering: optimizeLegibility;
@@ -824,7 +776,6 @@ function lv_render_wards_page($atts = []) {
 
     #lvWards .w-list {
         width: 100%;
-        background: var(--cream);
     }
 
 
